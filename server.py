@@ -4,16 +4,15 @@ from pprint import pformat
 import os
 import requests
 
+API_KEY = os.environ['TICKETMASTER_KEY']
 
 app = Flask(__name__)
-app.secret_key = 'SECRETSECRETSECRET'
+app.secret_key = API_KEY
 
 # This configuration option makes the Flask interactive debugger
 # more useful (you should remove this line in production though)
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
 
-
-API_KEY = os.environ['TICKETMASTER_KEY']
 
 
 @app.route('/')
@@ -53,10 +52,19 @@ def find_afterparties():
     #
     # - Replace the empty list in `events` with the list of events from your
     #   search results
+    
+    payload = {'apikey': API_KEY,
+               'keyword': keyword,
+               'postalCode': postalcode,
+               'radius': radius,
+               'unit': unit,
+               'sort': sort}
 
-    data = {'Test': ['This is just some test data'],
-            'page': {'totalElements': 1}}
-    events = []
+    response = requests.get(url, params=payload)
+
+    data = response.json()
+    events = data['_embedded']['events']
+
 
     return render_template('search-results.html',
                            pformat=pformat,
